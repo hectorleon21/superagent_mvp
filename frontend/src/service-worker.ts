@@ -9,10 +9,10 @@ declare const self: ServiceWorkerGlobalScope;
 // Crear un nombre único para el caché
 const CACHE = `cache-${version}`;
 
-// Recursos para pre-cachear
+// Filtrar los recursos para excluir los iconos que no existen
 const ASSETS = [
   ...build, // archivos generados por el bundler
-  ...files  // archivos estáticos
+  ...files.filter(file => !file.includes('/icons/')) // archivos estáticos excluyendo íconos
 ];
 
 // Instalar el service worker
@@ -21,7 +21,18 @@ self.addEventListener('install', (event) => {
   self.skipWaiting();
   
   event.waitUntil(
-    caches.open(CACHE).then(cache => cache.addAll(ASSETS))
+    caches.open(CACHE).then(cache => {
+      // Agregar archivos de uno en uno para manejar errores individualmente
+      return Promise.allSettled(
+        ASSETS.map(async (asset) => {
+          try {
+            await cache.add(asset);
+          } catch (error) {
+            console.warn(`No se pudo cachear el recurso: ${asset}`, error);
+          }
+        })
+      );
+    })
   );
 });
 
@@ -44,6 +55,11 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   // No interceptar solicitudes a la API
   if (event.request.url.includes('/api/') || event.request.url.includes('/ws/')) {
+    return;
+  }
+  
+  // Ignorar solicitudes de íconos faltantes
+  if (event.request.url.includes('/icons/')) {
     return;
   }
   
