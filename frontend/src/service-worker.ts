@@ -112,4 +112,8 @@ self.addEventListener('fetch', (event) => {
         });
     })
   );
-}); 
+});
+
+// Service worker desactivado temporalmente
+// Archivo vacío para evitar errores
+export {}; 
