@@ -698,7 +698,10 @@ Respuesta generada: "${fullResponse}"`;
   })
   
   // Iniciar el servidor
-  .listen(process.env.PORT || 3000);
+  .listen({
+    port: Number(process.env.PORT) || 3000,
+    hostname: '0.0.0.0'
+  });
 
 console.log(
   `🔥 SuperAgent API está ejecutándose en ${app.server?.hostname}:${app.server?.port} (usando Fireworks AI con memoria contextual y supervisor)`
