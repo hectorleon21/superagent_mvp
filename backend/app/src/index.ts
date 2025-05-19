@@ -380,22 +380,25 @@ const app = new Elysia({
     idleTimeout: 30 // 30 segundos (el límite es 255 segundos)
   }
 })
-// Manejo manual de CORS simplificado
+// Manejo manual de CORS ajustado para Vercel
 .onRequest((context) => {
   if (context.request.method === 'OPTIONS') {
     context.set.headers = {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'POST, GET, OPTIONS', // Solo los que realmente usas para /api/chat/stream
-      'Access-Control-Allow-Headers': 'Content-Type' // Solo Content-Type si no usas Authorization
+      'Access-Control-Allow-Origin': 'https://superagent-mvp-2.vercel.app', // URL de tu frontend en Vercel
+      'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization', // Re-añadimos Authorization por si lo usas
+      'Access-Control-Allow-Credentials': 'true', // Si necesitas cookies/sesiones cross-origin
+      'Access-Control-Max-Age': '86400'
     };
-    context.set.status = 200; // Usar 200 OK para la respuesta OPTIONS
-    return "OPTIONS handled"; // Terminar el ciclo para la solicitud OPTIONS
+    context.set.status = 200; 
+    return "OPTIONS handled"; 
   }
 })
 .onResponse((context) => {
-  context.set.headers['Access-Control-Allow-Origin'] = '*';
+  context.set.headers['Access-Control-Allow-Origin'] = 'https://superagent-mvp-2.vercel.app'; // URL de tu frontend en Vercel
+  context.set.headers['Access-Control-Allow-Credentials'] = 'true'; // Coherencia
 })
-// .use(swagger()) // Comentado temporalmente
+.use(swagger()) // Podemos intentar re-activar swagger
   
   // Ruta para verificar el estado del servidor
   .get("/", () => "SuperAgent API está funcionando correctamente con Fireworks AI, memoria contextual y sistema de supervisión")
