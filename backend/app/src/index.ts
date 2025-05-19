@@ -386,6 +386,9 @@ const app = new Elysia({
   // Ruta para verificar el estado del servidor
   .get("/", () => "SuperAgent API está funcionando correctamente con Fireworks AI, memoria contextual y sistema de supervisión")
   
+  // Endpoint específico para health check
+  .get("/api/health", () => ({ status: "ok" }))
+  
   // Documentación de la API
   .get("/status", () => ({
     status: "online",
