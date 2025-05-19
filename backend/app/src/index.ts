@@ -1,5 +1,5 @@
 import { Elysia } from "elysia";
-// import { cors } from '@elysiajs/cors'; // Comentamos el plugin CORS
+import { cors } from '@elysiajs/cors'; // Re-activamos el plugin CORS
 import { swagger } from '@elysiajs/swagger';
 
 // API key para Fireworks
@@ -380,24 +380,13 @@ const app = new Elysia({
     idleTimeout: 30 // 30 segundos (el límite es 255 segundos)
   }
 })
-// Manejo manual de CORS ajustado para Vercel
-.onRequest((context) => {
-  if (context.request.method === 'OPTIONS') {
-    context.set.headers = {
-      'Access-Control-Allow-Origin': 'https://superagent-mvp-2.vercel.app', // URL de tu frontend en Vercel
-      'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization', // Re-añadimos Authorization por si lo usas
-      'Access-Control-Allow-Credentials': 'true', // Si necesitas cookies/sesiones cross-origin
-      'Access-Control-Max-Age': '86400'
-    };
-    context.set.status = 200; 
-    return "OPTIONS handled"; 
-  }
-})
-.onResponse((context) => {
-  context.set.headers['Access-Control-Allow-Origin'] = 'https://superagent-mvp-2.vercel.app'; // URL de tu frontend en Vercel
-  context.set.headers['Access-Control-Allow-Credentials'] = 'true'; // Coherencia
-})
+.use(cors({
+  origin: 'https://superagent-mvp-2.vercel.app', // URL de tu frontend en Vercel
+  methods: ['GET', 'POST', 'OPTIONS'], // Métodos necesarios
+  allowedHeaders: ['Content-Type', 'Authorization'], // Cabeceras que envías
+  credentials: true, // Si alguna vez necesitas cookies/auth
+  preflight: true // Asegurar que maneje solicitudes OPTIONS explícitamente
+}))
 .use(swagger()) // Podemos intentar re-activar swagger
   
   // Ruta para verificar el estado del servidor
