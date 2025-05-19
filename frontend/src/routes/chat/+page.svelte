@@ -287,15 +287,15 @@
 			timestamp: new Date()
 		}];
 		
-		// Inicializar WebSocket
-		try {
-			isConnecting = true;
-			wsClient.connect(handleWebSocketMessage);
-		} catch (error) {
-			console.error('Error al conectar WebSocket:', error);
-		} finally {
-			isConnecting = false;
-		}
+		// Inicializar WebSocket - Comentado temporalmente
+		// try {
+		// 	isConnecting = true;
+		// 	wsClient.connect(handleWebSocketMessage);
+		// } catch (error) {
+		// 	console.error('Error al conectar WebSocket:', error);
+		// } finally {
+		// 	isConnecting = false;
+		// }
 		
 		// Inicializar el detector de scroll
 		if (chatContainer) {
@@ -307,8 +307,8 @@
 	});
 	
 	onDestroy(() => {
-		// Cerrar WebSocket al salir
-		wsClient.disconnect();
+		// Cerrar WebSocket al salir - Comentado temporalmente
+		// wsClient.disconnect();
 		
 		// Liberar recursos de imágenes
 		if (imagePreviewUrl) {
