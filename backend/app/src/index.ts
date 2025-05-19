@@ -381,10 +381,10 @@ const app = new Elysia({
   }
 })
   .use(cors({
-    origin: 'https://superagent-mvp-2.vercel.app', // Reemplaza esto si tu URL de Vercel es diferente
+    origin: '*', // PERMITIR TODOS LOS ORÍGENES TEMPORALMENTE PARA DEPURAR
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true
+    credentials: true // Mantener por si se usa en el futuro, aunque para origin * podría no ser necesario
   }))
   .use(swagger())
   
