@@ -1,0 +1,9 @@
+[build]
+builder = "nixpacks"
+buildCommand = "cd backend/app && bun install"
+
+[deploy]
+startCommand = "cd backend/app && bun run src/index.ts"
+healthcheckPath = "/api/health"
+restartPolicyType = "on_failure"
+numReplicas = 1 
