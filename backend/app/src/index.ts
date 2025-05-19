@@ -1,5 +1,5 @@
 import { Elysia } from "elysia";
-import { cors } from '@elysiajs/cors'; // Re-activamos el plugin CORS
+import { cors } from '@elysiajs/cors';
 import { swagger } from '@elysiajs/swagger';
 
 // API key para Fireworks
@@ -374,6 +374,8 @@ Respuesta generada: "${response}"`;
   }
 }
 
+const vercelFrontendOrigin = 'https://superagent-mvp-2.vercel.app';
+
 // Crear la aplicación Elysia
 const app = new Elysia({
   serve: {
@@ -381,11 +383,11 @@ const app = new Elysia({
   }
 })
 .use(cors({
-  origin: 'https://superagent-mvp-2.vercel.app', // URL de tu frontend en Vercel
-  methods: ['GET', 'POST', 'OPTIONS'], // Métodos necesarios
-  allowedHeaders: ['Content-Type', 'Authorization'], // Cabeceras que envías
-  credentials: true, // Si alguna vez necesitas cookies/auth
-  preflight: true // Asegurar que maneje solicitudes OPTIONS explícitamente
+  origin: vercelFrontendOrigin, // Permitir explícitamente solo el origen de Vercel
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
+  preflight: true 
 }))
 .use(swagger()) // Podemos intentar re-activar swagger
   
