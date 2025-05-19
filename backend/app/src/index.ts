@@ -380,25 +380,20 @@ const app = new Elysia({
     idleTimeout: 30 // 30 segundos (el límite es 255 segundos)
   }
 })
-// Manejo manual de CORS
+// Manejo manual de CORS simplificado
 .onRequest((context) => {
   if (context.request.method === 'OPTIONS') {
     context.set.headers = {
-      'Access-Control-Allow-Origin': '*', // O 'https://superagent-mvp-2.vercel.app'
-      'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-      'Access-Control-Max-Age': '86400'
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'POST, GET, OPTIONS', // Solo los que realmente usas para /api/chat/stream
+      'Access-Control-Allow-Headers': 'Content-Type' // Solo Content-Type si no usas Authorization
     };
-    // Para OPTIONS, Elysia enviará automáticamente un 204 No Content si no se devuelve nada.
-    // Es importante no pasar al siguiente handler si es una solicitud OPTIONS que ya manejamos.
-    // Devolver un valor aquí (incluso un string vacío) termina el ciclo de vida para esta solicitud.
-    return "handled"; // O context.set.status = 204; y luego no retornar nada.
+    context.set.status = 200; // Usar 200 OK para la respuesta OPTIONS
+    return "OPTIONS handled"; // Terminar el ciclo para la solicitud OPTIONS
   }
 })
 .onResponse((context) => {
-  // Añadir cabecera a todas las respuestas normales
-  // Asegurarse de no sobrescribir otras cabeceras importantes que Elysia pueda haber establecido.
-  context.set.headers['Access-Control-Allow-Origin'] = '*'; // O 'https://superagent-mvp-2.vercel.app'
+  context.set.headers['Access-Control-Allow-Origin'] = '*';
 })
 // .use(swagger()) // Comentado temporalmente
   
