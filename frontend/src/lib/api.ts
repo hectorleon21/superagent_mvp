@@ -198,8 +198,17 @@ export class WebSocketClient {
       this.ws.close();
     }
 
-    // Crear nueva conexión
-    this.ws = new WebSocket(`ws://${API_URL.replace('http://', '')}/ws/chat`);
+    // Crear nueva conexión WebSocket, usando wss si la API_URL es https
+    let wsUrl;
+    if (API_URL.startsWith('https://')) {
+      wsUrl = `wss://${API_URL.substring('https://'.length)}ws/chat`;
+    } else {
+      wsUrl = `ws://${API_URL.substring('http://'.length)}ws/chat`;
+    }
+    // Asegurarse de que no haya doble // si API_URL termina en /
+    wsUrl = wsUrl.replace('//ws/chat', '/ws/chat'); 
+
+    this.ws = new WebSocket(wsUrl);
     
     this.ws.onopen = () => {
       console.log('Conexión WebSocket establecida');
