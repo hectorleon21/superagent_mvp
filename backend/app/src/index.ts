@@ -380,7 +380,12 @@ const app = new Elysia({
     idleTimeout: 30 // 30 segundos (el límite es 255 segundos)
   }
 })
-  .use(cors())
+  .use(cors({
+    origin: 'https://superagent-mvp-2.vercel.app', // Reemplaza esto si tu URL de Vercel es diferente
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true
+  }))
   .use(swagger())
   
   // Ruta para verificar el estado del servidor
