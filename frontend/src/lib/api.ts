@@ -2,8 +2,14 @@
  * Servicio para la comunicación con el backend
  */
 
+// DEBUG: Imprimir la variable de entorno
+console.log('VITE_API_BASE_URL from import.meta.env:', import.meta.env.VITE_API_BASE_URL);
+
 // API URL - cambiar según entorno
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+
+// DEBUG: Imprimir la API_URL final que se usará
+console.log('Final API_URL being used:', API_URL);
 
 // Interfaz para mensajes de chat
 export interface ChatMessage {
