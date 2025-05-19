@@ -1,5 +1,5 @@
 import { Elysia } from "elysia";
-import { cors } from '@elysiajs/cors';
+// import { cors } from '@elysiajs/cors'; // Comentamos el plugin CORS
 import { swagger } from '@elysiajs/swagger';
 
 // API key para Fireworks
@@ -380,13 +380,27 @@ const app = new Elysia({
     idleTimeout: 30 // 30 segundos (el límite es 255 segundos)
   }
 })
-  .use(cors({
-    origin: '*', // PERMITIR TODOS LOS ORÍGENES TEMPORALMENTE PARA DEPURAR
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true // Mantener por si se usa en el futuro, aunque para origin * podría no ser necesario
-  }))
-  .use(swagger())
+// Manejo manual de CORS
+.onRequest((context) => {
+  if (context.request.method === 'OPTIONS') {
+    context.set.headers = {
+      'Access-Control-Allow-Origin': '*', // O 'https://superagent-mvp-2.vercel.app'
+      'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      'Access-Control-Max-Age': '86400'
+    };
+    // Para OPTIONS, Elysia enviará automáticamente un 204 No Content si no se devuelve nada.
+    // Es importante no pasar al siguiente handler si es una solicitud OPTIONS que ya manejamos.
+    // Devolver un valor aquí (incluso un string vacío) termina el ciclo de vida para esta solicitud.
+    return "handled"; // O context.set.status = 204; y luego no retornar nada.
+  }
+})
+.onResponse((context) => {
+  // Añadir cabecera a todas las respuestas normales
+  // Asegurarse de no sobrescribir otras cabeceras importantes que Elysia pueda haber establecido.
+  context.set.headers['Access-Control-Allow-Origin'] = '*'; // O 'https://superagent-mvp-2.vercel.app'
+})
+// .use(swagger()) // Comentado temporalmente
   
   // Ruta para verificar el estado del servidor
   .get("/", () => "SuperAgent API está funcionando correctamente con Fireworks AI, memoria contextual y sistema de supervisión")
