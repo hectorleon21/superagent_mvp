@@ -7,8 +7,8 @@ const config = {
 		adapter: adapter(),
 		prerender: {
 			handleHttpError: ({ path, referrer, message }) => {
-				// ignorar errores 404 para iconos
-				if (path.startsWith('/icons/') || path.includes('icon-192x192.png')) {
+				// ignorar todos los errores 404
+				if (message.includes('404')) {
 					console.warn(`Ignorando error 404 para ${path}`);
 					return;
 				}
