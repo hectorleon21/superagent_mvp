@@ -374,7 +374,7 @@ Respuesta generada: "${response}"`;
   }
 }
 
-const vercelFrontendOrigin = 'https://superagent-mvp-2.vercel.app';
+const vercelOrigin = 'https://superagent-mvp-2.vercel.app';
 
 // Crear la aplicación Elysia
 const app = new Elysia({
@@ -383,7 +383,7 @@ const app = new Elysia({
   }
 })
 .use(cors({
-  origin: vercelFrontendOrigin, // Permitir explícitamente solo el origen de Vercel
+  origin: vercelOrigin, // Solo y exactamente el origen de Vercel
   methods: ['GET', 'POST', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
