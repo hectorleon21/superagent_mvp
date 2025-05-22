@@ -374,7 +374,11 @@ Respuesta generada: "${response}"`;
   }
 }
 
-const vercelOrigin = 'https://superagent-mvp-2.vercel.app';
+// Configuración de CORS
+const isDevelopment = process.env.NODE_ENV !== 'production';
+const allowedOrigins = isDevelopment 
+  ? ['http://localhost:5173', 'http://localhost:3000', 'https://superagent-mvp-2.vercel.app']
+  : ['https://superagent-mvp-2.vercel.app', 'https://superagent-mvp.onrender.com'];
 
 // Crear la aplicación Elysia
 const app = new Elysia({
@@ -382,13 +386,59 @@ const app = new Elysia({
     idleTimeout: 30 // 30 segundos (el límite es 255 segundos)
   }
 })
+// Configuración robusta de CORS
 .use(cors({
-  origin: vercelOrigin, // Solo y exactamente el origen de Vercel
+  origin: (request) => {
+    const origin = request.headers.get('origin');
+    if (!origin) return false;
+    // En desarrollo, permitir todos los orígenes
+    if (isDevelopment) return true;
+    // En producción, solo orígenes permitidos
+    return allowedOrigins.includes(origin);
+  },
   methods: ['GET', 'POST', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
-  preflight: true 
+  preflight: true
 }))
+// Middleware para asegurar que todas las respuestas tengan CORS
+.onRequest(({ set, request }) => {
+  const origin = request.headers.get('origin');
+  if (origin) {
+    // En desarrollo, permitir cualquier origen
+    if (isDevelopment) {
+      set.headers['Access-Control-Allow-Origin'] = origin;
+    } 
+    // En producción, solo orígenes permitidos
+    else if (allowedOrigins.includes(origin)) {
+      set.headers['Access-Control-Allow-Origin'] = origin;
+    }
+    set.headers['Access-Control-Allow-Credentials'] = 'true';
+    set.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS';
+    set.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization';
+  }
+})
+.onError(({ code, error, set, request }) => {
+  // Asegurar que los errores también tengan CORS
+  const origin = request?.headers.get('origin');
+  if (origin) {
+    // En desarrollo, permitir cualquier origen
+    if (isDevelopment) {
+      set.headers['Access-Control-Allow-Origin'] = origin;
+    } 
+    // En producción, solo orígenes permitidos
+    else if (allowedOrigins.includes(origin)) {
+      set.headers['Access-Control-Allow-Origin'] = origin;
+    }
+    set.headers['Access-Control-Allow-Credentials'] = 'true';
+    set.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS';
+    set.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization';
+  }
+  return {
+    code,
+    message: error.message
+  };
+})
 .use(swagger()) // Podemos intentar re-activar swagger
   
   // Ruta para verificar el estado del servidor
