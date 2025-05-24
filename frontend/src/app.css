@@ -106,3 +106,13 @@ button:focus:not(:focus-visible) {
 	width: 1px;
 	white-space: nowrap;
 }
+
+.h-screen {
+	height: 100vh;
+}
+
+@supports (height: 100dvh) {
+	.h-screen {
+		height: 100dvh;
+	}
+}

@@ -22,6 +22,14 @@
 	let isTyping = false;
 	let typingName = 'Diego';
 	
+	let showA2HS = false;
+	let deferredPrompt: any = null;
+	
+	// Detectar móvil
+	function isMobile() {
+		return /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent);
+	}
+	
 	// Generar o recuperar ID de usuario
 	function getUserId(): string {
 		if (browser) {
@@ -304,6 +312,14 @@
 		
 		// Scroll inicial
 		scrollToBottom();
+		
+		window.addEventListener('beforeinstallprompt', (e) => {
+			if (isMobile() && window.matchMedia('(display-mode: browser)').matches) {
+				e.preventDefault();
+				deferredPrompt = e;
+				showA2HS = true;
+			}
+		});
 	});
 	
 	onDestroy(() => {
@@ -326,6 +342,16 @@
 		if (event.key === 'Enter' && !event.shiftKey) {
 			event.preventDefault();
 			sendMessage();
+		}
+	}
+	
+	function installPWA() {
+		if (deferredPrompt) {
+			deferredPrompt.prompt();
+			deferredPrompt.userChoice.then(() => {
+				showA2HS = false;
+				deferredPrompt = null;
+			});
 		}
 	}
 </script>
@@ -515,6 +541,16 @@
 			</div>
 		</div>
 	</div>
+	
+	{#if showA2HS}
+		<div class="fixed bottom-0 left-0 w-full bg-indigo-600 text-white flex items-center justify-between px-4 py-3 z-50 shadow-lg md:hidden">
+			<span class="font-semibold">Vive la Experiencia PWA</span>
+			<div class="flex gap-2">
+				<button class="bg-white text-indigo-600 font-bold px-3 py-1 rounded shadow" on:click={installPWA}>Instalar</button>
+				<button class="text-white text-xl px-2" on:click={() => showA2HS = false}>&times;</button>
+			</div>
+		</div>
+	{/if}
 </div>
 
 <style>
