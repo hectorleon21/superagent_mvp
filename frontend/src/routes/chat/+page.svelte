@@ -3,6 +3,8 @@
 	import { goto } from '$app/navigation';
 	import { apiClient, wsClient, type ChatMessage, type StreamCallbacks } from '$lib/api';
 	import { browser } from '$app/environment';
+	import { selectedProfile, type UserProfile } from '$lib/profileStore';
+	import { get } from 'svelte/store';
 	
 	let messages: ChatMessage[] = [];
 	let messageInput = '';
@@ -24,6 +26,10 @@
 	
 	let showA2HS = false;
 	let deferredPrompt: any = null;
+	
+	let profile: UserProfile | null = null;
+	
+	let showTyping = true;
 	
 	// Detectar móvil
 	function isMobile() {
@@ -284,16 +290,23 @@
 	}
 	
 	onMount(() => {
-		// Inicializar ID de usuario
+		profile = get(selectedProfile);
+		if (!profile) {
+			goto('/');
+		}
 		userId = getUserId();
 		console.log('ID de usuario:', userId);
 		
-		// Mensaje inicial del asistente
-		messages = [...messages, {
-			text: "¡Hola! Soy tu asistente virtual. ¿En qué puedo ayudarte hoy?",
-			isUser: false,
-			timestamp: new Date()
-		}];
+		// Mostrar efecto de escribiendo antes del saludo
+		showTyping = true;
+		setTimeout(() => {
+			showTyping = false;
+			messages = [...messages, {
+				text: `¡Hola ${profile?.name || ''}! Soy tu agente virtual. ¿En qué puedo ayudarte hoy?`,
+				isUser: false,
+				timestamp: new Date()
+			}];
+		}, 2000);
 		
 		// Inicializar WebSocket - Comentado temporalmente
 		// try {
@@ -378,13 +391,13 @@
 					<div class="flex items-center gap-3">
 						<div class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center">
 							<img 
-								src="https://randomuser.me/api/portraits/men/32.jpg" 
-								alt="Diego" 
+								src={profile?.profile?.img || 'https://randomuser.me/api/portraits/men/32.jpg'} 
+								alt={profile?.profile?.name || 'Perfil'} 
 								class="w-10 h-10 rounded-full object-cover"
 							/>
 						</div>
 						<div>
-							<div class="font-medium">Diego</div>
+							<div class="font-medium">{profile?.profile?.name || ''}</div>
 							<div class="text-xs text-green-600">En línea</div>
 						</div>
 					</div>
@@ -444,11 +457,11 @@
 				</div>
 			{/each}
 			
-			{#if isTyping}
+			{#if showTyping}
 				<div class="flex justify-start">
 					<div class="bg-gray-100 text-gray-700 rounded-lg p-3 max-w-xs md:max-w-md">
 						<div class="flex items-center">
-							<div class="text-sm">{typingName} está escribiendo</div>
+							<div class="text-sm">{profile?.profile?.name} está escribiendo</div>
 							<div class="flex items-center space-x-1 ml-2">
 								<div class="w-1.5 h-1.5 rounded-full bg-gray-400 animate-pulse"></div>
 								<div class="w-1.5 h-1.5 rounded-full bg-gray-500 animate-pulse animation-delay-300"></div>

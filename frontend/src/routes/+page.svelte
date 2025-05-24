@@ -1,15 +1,53 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { selectedProfile } from '$lib/profileStore';
+
+	let userName = '';
+	let userPhone = '';
+	let showWarning = false;
+
+	const countries = [
+		{ code: '+51', name: 'Perú', flag: 'https://flagcdn.com/pe.svg' },
+		{ code: '+54', name: 'Argentina', flag: 'https://flagcdn.com/ar.svg' },
+		{ code: '+57', name: 'Colombia', flag: 'https://flagcdn.com/co.svg' },
+		{ code: '+56', name: 'Chile', flag: 'https://flagcdn.com/cl.svg' },
+		{ code: '+593', name: 'Ecuador', flag: 'https://flagcdn.com/ec.svg' },
+		{ code: '+598', name: 'Uruguay', flag: 'https://flagcdn.com/uy.svg' },
+		{ code: '+591', name: 'Bolivia', flag: 'https://flagcdn.com/bo.svg' },
+	];
+	let selectedCountry = countries[0];
+
+	const profiles = [
+		{
+			name: 'Edu',
+			img: 'https://randomuser.me/api/portraits/men/75.jpg', // mestizo latino
+			desc: 'Edu es capaz de vender tus productos. Aprende la información de tu empresa. Se integra por Whatsapp, Instagram, Web y Facebook.'
+		},
+		{
+			name: 'Eli',
+			img: 'https://randomuser.me/api/portraits/women/65.jpg', // rubia latina
+			desc: 'Hace lo mismo que Edu y además: Analiza tu competencia y te define una estrategia de ventas personalizada. Genera contenido en Instagram, Facebook. Crea tu pagina web.'
+		}
+	];
+
+	function selectProfile(profile) {
+		if (!userName.trim() || !userPhone.trim()) {
+			showWarning = true;
+			return;
+		}
+		selectedProfile.set({ name: userName, phone: selectedCountry.code + userPhone, profile });
+		goto('/chat');
+	}
 </script>
 
 <svelte:head>
 	<title>SuperAgent MVP</title>
-	<meta name="description" content="Contrata tu asistente virtual personalizado" />
+	<meta name="description" content="Contrata tu agente de ventas personalizado" />
 </svelte:head>
 
 <div class="container mx-auto px-4 py-8 max-w-2xl">
-	<h1 class="text-4xl font-bold text-center text-indigo-600 mb-8">Contrata tu Asistente</h1>
-	
+	<h1 class="text-4xl font-bold text-center text-indigo-600 mb-8">Contrata tu Agente de Ventas</h1>
+
 	<div class="mb-8">
 		<h2 class="text-xl flex items-center gap-2 mb-2">
 			<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -17,114 +55,53 @@
 			</svg>
 			Pon tu Nombre y Número de teléfono
 		</h2>
-		<p class="text-gray-600 mb-4">El Asistente contratado se comunicará contigo</p>
-		
+		<p class="text-gray-600 mb-4">El Agente contratado se comunicará contigo</p>
 		<div class="space-y-4">
 			<input 
 				type="text" 
 				placeholder="Ingresa tu Nombre" 
+				bind:value={userName}
 				class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
 			/>
-			
 			<div class="flex">
-				<div class="flex items-center justify-center bg-gray-100 p-3 border border-gray-300 rounded-l-md">
-					<div class="flex items-center gap-1">
-						<img src="https://flagcdn.com/ar.svg" alt="Argentina" class="w-6" />
-						<span class="text-gray-700">+54</span>
-					</div>
+				<div class="flex items-center bg-gray-100 p-3 border border-gray-300 rounded-l-md">
+					<select bind:value={selectedCountry} class="bg-transparent outline-none border-none pr-2">
+						{#each countries as country}
+							<option value={country}>{country.name}</option>
+						{/each}
+					</select>
+					<img src={selectedCountry.flag} alt={selectedCountry.name} class="w-6 ml-2" />
+					<span class="text-gray-700 ml-2">{selectedCountry.code}</span>
 				</div>
 				<input 
 					type="tel" 
 					placeholder="Ingresa tu Número" 
+					bind:value={userPhone}
 					class="flex-1 p-3 border border-gray-300 rounded-r-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
 				/>
 			</div>
 		</div>
+		{#if showWarning}
+			<p class="text-red-600 mt-2">Por favor, completa tu nombre y número antes de continuar.</p>
+		{/if}
 	</div>
-	
+
 	<div class="mb-8">
-		<h2 class="text-xl mb-6">Elige el Rol</h2>
-		
-		<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-			<!-- Ejecutivo de Ventas -->
-			<div class="border border-indigo-200 rounded-lg p-6 bg-blue-50 flex flex-col items-center cursor-pointer hover:shadow-lg transition-shadow">
-				<div class="bg-blue-100 p-4 rounded-full mb-4">
-					<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-					</svg>
-				</div>
-				<h3 class="text-lg font-semibold mb-1 text-center">Ejecutivo de Ventas</h3>
-				<p class="text-sm text-gray-600 text-center">Experto en ventas y negociación</p>
-			</div>
-			
-			<!-- Soporte Técnico -->
-			<div class="border border-green-200 rounded-lg p-6 bg-green-50 flex flex-col items-center cursor-pointer hover:shadow-lg transition-shadow">
-				<div class="bg-green-100 p-4 rounded-full mb-4">
-					<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-					</svg>
-				</div>
-				<h3 class="text-lg font-semibold mb-1 text-center">Soporte Técnico</h3>
-				<p class="text-sm text-gray-600 text-center">Especialista en resolución de problemas técnicos</p>
-			</div>
-			
-			<!-- Analista Documental -->
-			<div class="border border-purple-200 rounded-lg p-6 bg-purple-50 flex flex-col items-center cursor-pointer hover:shadow-lg transition-shadow">
-				<div class="bg-purple-100 p-4 rounded-full mb-4">
-					<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-					</svg>
-				</div>
-				<h3 class="text-lg font-semibold mb-1 text-center">Analista Documental</h3>
-				<p class="text-sm text-gray-600 text-center">Especialista en gestión y análisis de documentos</p>
-			</div>
-		</div>
-	</div>
-	
-	<div class="mb-8">
-		<h2 class="text-xl mb-6">Selecciona tu Asistente</h2>
-		
+		<h2 class="text-xl mb-6">Selecciona tu Perfil</h2>
 		<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-			<!-- Diego -->
-			<div class="border rounded-lg overflow-hidden cursor-pointer hover:shadow-lg transition-shadow">
-				<div class="flex justify-center bg-gray-50 p-4">
-					<img 
-						src="https://randomuser.me/api/portraits/men/32.jpg" 
-						alt="Diego" 
-						class="w-32 h-32 rounded-full object-cover"
-					/>
+			{#each profiles as profile}
+				<div class="border rounded-lg overflow-hidden cursor-pointer hover:shadow-lg transition-shadow {(!userName.trim() || !userPhone.trim()) ? 'opacity-50 pointer-events-none' : ''}" on:click={() => selectProfile(profile)}>
+					<div class="flex justify-center bg-gray-50 p-4">
+						<img src={profile.img} alt={profile.name} class="w-32 h-32 rounded-full object-cover" />
+					</div>
+					<div class="p-4 text-center">
+						<h3 class="text-xl font-semibold mb-1">{profile.name}</h3>
+						<p class="text-sm text-gray-600">{profile.desc}</p>
+					</div>
 				</div>
-				<div class="p-4 text-center">
-					<h3 class="text-xl font-semibold mb-1">Diego</h3>
-					<p class="text-indigo-600 font-medium">Ventas B2B</p>
-					<p class="text-sm text-gray-600">5 años de experiencia</p>
-				</div>
-			</div>
-			
-			<!-- Lucia -->
-			<div class="border rounded-lg overflow-hidden cursor-pointer hover:shadow-lg transition-shadow">
-				<div class="flex justify-center bg-gray-50 p-4">
-					<img 
-						src="https://randomuser.me/api/portraits/women/44.jpg" 
-						alt="Lucia" 
-						class="w-32 h-32 rounded-full object-cover"
-					/>
-				</div>
-				<div class="p-4 text-center">
-					<h3 class="text-xl font-semibold mb-1">Lucia</h3>
-					<p class="text-indigo-600 font-medium">Ventas Consultivas</p>
-					<p class="text-sm text-gray-600">4 años de experiencia</p>
-				</div>
-			</div>
+			{/each}
 		</div>
 	</div>
-	
-	<button 
-		class="w-full py-4 bg-indigo-600 text-white font-medium rounded-md hover:bg-indigo-700 transition-colors"
-		on:click={() => goto('/chat')}
-	>
-		Contratar Asistente
-	</button>
 </div>
 
 <style>
