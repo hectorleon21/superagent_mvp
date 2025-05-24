@@ -3,7 +3,7 @@
 </script>
 
 <main>
-	{@render children()}
+	<slot />
 </main>
 
 <style>
