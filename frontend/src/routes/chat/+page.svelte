@@ -141,6 +141,7 @@
 		
 		// Activar estado de "escribiendo"
 		isTyping = true;
+		showTyping = true;
 		isResponding = true;
 		
 		// Scroll para asegurar visibilidad del indicador de escritura
@@ -152,16 +153,13 @@
 				console.log('Comenzando streaming...');
 			},
 			onChunk: (chunk) => {
-				// Ahora recibimos la respuesta completa de una vez
+				showTyping = false;
 				isTyping = false;
-				
-				// Añadir el mensaje completo
 				messages = [...messages, {
 					text: chunk,
 					isUser: false,
 					timestamp: new Date()
 				}];
-				
 				scrollToBottom();
 				isResponding = false;
 			},
@@ -169,12 +167,14 @@
 				// Ya no se usa, el manejo se hace en el backend
 			},
 			onDone: () => {
+				showTyping = false;
 				isResponding = false;
 				isTyping = false;
 				console.log('Streaming completado');
 			},
 			onError: (error) => {
 				console.error('Error en streaming:', error);
+				showTyping = false;
 				isResponding = false;
 				isTyping = false;
 				
@@ -218,13 +218,18 @@
 		messageInput = '';
 		removeImage();
 		
+		showTyping = true;
+		scrollToBottom();
+		
 		try {
 			// Llamar a la API con ID de usuario
 			const response = await apiClient.sendChatMessage(userQuestion, imageUrl, userId);
+			showTyping = false;
 			messages = [...messages, response];
 			scrollToBottom();
 		} catch (error) {
 			console.error('Error al enviar mensaje:', error);
+			showTyping = false;
 			messages = [...messages, {
 				text: 'Lo siento, ha ocurrido un error al procesar tu mensaje.',
 				isUser: false,
@@ -259,10 +264,14 @@
 		messageInput = '';
 		removeImage();
 		
+		showTyping = true;
+		scrollToBottom();
+		
 		// Enviar mensaje por WebSocket con ID de usuario
 		const sent = wsClient.sendMessage(userQuestion, imageUrl, userId);
 		
 		if (!sent) {
+			showTyping = false;
 			messages = [...messages, {
 				text: 'Error de conexión. Cambia a modo API o intenta nuevamente.',
 				isUser: false,
@@ -285,6 +294,7 @@
 	
 	// Manejar respuesta de WebSocket
 	function handleWebSocketMessage(message: ChatMessage) {
+		showTyping = false;
 		messages = [...messages, message];
 		scrollToBottom();
 	}
