@@ -299,6 +299,24 @@
 		scrollToBottom();
 	}
 	
+	function getInitialGreeting(userName: string, agent: string) {
+		if (agent === 'Edu') {
+			const variants = [
+				`¡Hola ${userName}! Soy Edu, tu Ejecutivo de Ventas. Me encantaría ayudarte a crecer tu negocio. ¿Qué tipo de producto o servicio ofreces? ¿Cómo se llama tu empresa?`,
+				`¡Un gusto saludarte, ${userName}! Soy Edu, postulando para ser tu Ejecutivo de Ventas. ¿Podrías contarme qué productos o servicios ofrece tu empresa?`,
+				`¡Hola ${userName}! Mi nombre es Edu y me gustaría ser tu Ejecutivo de Ventas. ¿Qué tipo de empresa tienes y cómo se llama?`
+			];
+			return variants[Math.floor(Math.random() * variants.length)];
+		} else {
+			const variants = [
+				`¡Hola ${userName}! Soy Eli, tu Ejecutiva de Ventas. Me encantaría ayudarte a impulsar tu empresa. ¿Qué producto o servicio ofreces? ¿Cómo se llama tu empresa?`,
+				`¡Un placer conocerte, ${userName}! Soy Eli, postulando para ser tu Ejecutiva de Ventas. ¿Me cuentas un poco sobre tu empresa y lo que vendes?`,
+				`¡Hola ${userName}! Mi nombre es Eli y me gustaría ser tu Ejecutiva de Ventas. ¿Qué tipo de negocio tienes y cómo se llama?`
+			];
+			return variants[Math.floor(Math.random() * variants.length)];
+		}
+	}
+	
 	onMount(() => {
 		profile = get(selectedProfile);
 		if (!profile) {
@@ -312,7 +330,7 @@
 		setTimeout(() => {
 			showTyping = false;
 			messages = [...messages, {
-				text: `¡Hola ${profile?.name || ''}! Soy tu agente virtual. ¿En qué puedo ayudarte hoy?`,
+				text: getInitialGreeting(profile?.name || '', profile?.profile?.name || ''),
 				isUser: false,
 				timestamp: new Date()
 			}];
