@@ -117,41 +117,27 @@
 	// Enviar mensaje usando streaming
 	async function sendMessageStream() {
 		if (!messageInput.trim() && !imageFile) return;
-		
 		let imageUrl = '';
-		
-		// Si hay imagen, obtener URL
 		if (imageFile) {
 			imageUrl = await imageToBase64(imageFile);
 		}
-		
-		// Agregar mensaje del usuario
 		const userMessage: ChatMessage = {
 			text: messageInput,
 			isUser: true,
 			timestamp: new Date(),
 			imageUrl: imagePreviewUrl || undefined
 		};
-		
 		messages = [...messages, userMessage];
-		
 		const userQuestion = messageInput;
 		messageInput = '';
 		removeImage();
-		
-		// Activar estado de "escribiendo"
 		isTyping = true;
 		showTyping = true;
 		isResponding = true;
-		
-		// Scroll para asegurar visibilidad del indicador de escritura
 		scrollToBottom();
-		
-		// Callbacks para el streaming
+
 		const callbacks: StreamCallbacks = {
-			onStart: () => {
-				console.log('Comenzando streaming...');
-			},
+			onStart: () => {},
 			onChunk: (chunk) => {
 				showTyping = false;
 				isTyping = false;
@@ -163,33 +149,24 @@
 				scrollToBottom();
 				isResponding = false;
 			},
-			onCorrection: (correctedText) => {
-				// Ya no se usa, el manejo se hace en el backend
-			},
+			onCorrection: () => {},
 			onDone: () => {
 				showTyping = false;
 				isResponding = false;
 				isTyping = false;
-				console.log('Streaming completado');
 			},
 			onError: (error) => {
-				console.error('Error en streaming:', error);
 				showTyping = false;
 				isResponding = false;
 				isTyping = false;
-				
-				// Mostrar mensaje de error
 				messages = [...messages, {
 					text: 'Error: No se pudo completar la respuesta.',
 					isUser: false,
 					timestamp: new Date()
 				}];
-				
 				scrollToBottom();
 			}
 		};
-		
-		// Enviar mensaje con streaming, incluyendo ID de usuario
 		apiClient.sendChatMessageStream(userQuestion, callbacks, imageUrl, userId);
 	}
 	
@@ -302,16 +279,16 @@
 	function getInitialGreeting(userName: string, agent: string) {
 		if (agent === 'Edu') {
 			const variants = [
-				`¡Hola ${userName}! Soy Edu, tu Ejecutivo de Ventas. Me encantaría ayudarte a crecer tu negocio. ¿Qué tipo de producto o servicio ofreces? ¿Cómo se llama tu empresa?`,
-				`¡Un gusto saludarte, ${userName}! Soy Edu, postulando para ser tu Ejecutivo de Ventas. ¿Podrías contarme qué productos o servicios ofrece tu empresa?`,
-				`¡Hola ${userName}! Mi nombre es Edu y me gustaría ser tu Ejecutivo de Ventas. ¿Qué tipo de empresa tienes y cómo se llama?`
+				`¡Un placer conocerte, ${userName}! Soy Eduardo, me encantaría ser tu Ejecutivo de Ventas. ¿Me cuentas un poco sobre tu empresa y lo que vendes?`,
+				`¡Hola ${userName}! Soy Eduardo, postulando para ser tu Ejecutivo de Ventas. ¿A qué se dedica tu negocio o qué servicios ofreces?`,
+				`¡Qué gusto saludarte, ${userName}! Mi nombre es Eduardo y me gustaría ayudarte a impulsar tu empresa. ¿Me cuentas a qué te dedicas?`
 			];
 			return variants[Math.floor(Math.random() * variants.length)];
 		} else {
 			const variants = [
-				`¡Hola ${userName}! Soy Eli, tu Ejecutiva de Ventas. Me encantaría ayudarte a impulsar tu empresa. ¿Qué producto o servicio ofreces? ¿Cómo se llama tu empresa?`,
-				`¡Un placer conocerte, ${userName}! Soy Eli, postulando para ser tu Ejecutiva de Ventas. ¿Me cuentas un poco sobre tu empresa y lo que vendes?`,
-				`¡Hola ${userName}! Mi nombre es Eli y me gustaría ser tu Ejecutiva de Ventas. ¿Qué tipo de negocio tienes y cómo se llama?`
+				`¡Un placer conocerte, ${userName}! Soy Eli, me encantaría ser tu Ejecutiva de Ventas. ¿Me cuentas un poco sobre tu empresa y lo que vendes?`,
+				`¡Hola ${userName}! Soy Eli, postulando para ser tu Ejecutiva de Ventas. ¿A qué se dedica tu negocio o qué servicios ofreces?`,
+				`¡Qué gusto saludarte, ${userName}! Mi nombre es Eli y me gustaría ayudarte a impulsar tu empresa. ¿Me cuentas a qué te dedicas?`
 			];
 			return variants[Math.floor(Math.random() * variants.length)];
 		}
@@ -336,16 +313,6 @@
 			}];
 		}, 2000);
 		
-		// Inicializar WebSocket - Comentado temporalmente
-		// try {
-		// 	isConnecting = true;
-		// 	wsClient.connect(handleWebSocketMessage);
-		// } catch (error) {
-		// 	console.error('Error al conectar WebSocket:', error);
-		// } finally {
-		// 	isConnecting = false;
-		// }
-		
 		// Inicializar el detector de scroll
 		if (chatContainer) {
 			chatContainer.addEventListener('scroll', handleScroll);
@@ -364,9 +331,6 @@
 	});
 	
 	onDestroy(() => {
-		// Cerrar WebSocket al salir - Comentado temporalmente
-		// wsClient.disconnect();
-		
 		// Liberar recursos de imágenes
 		if (imagePreviewUrl) {
 			URL.revokeObjectURL(imagePreviewUrl);
