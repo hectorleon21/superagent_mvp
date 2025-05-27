@@ -7,9 +7,10 @@ const GROQ_API_KEY = "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";
 const GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
 
 // Sistema de roles para controlar el comportamiento del modelo
-const SYSTEM_ROLE_USER_AGENT = `Eres un agente comercial buscando ser contratado.
+const SYSTEM_ROLE_USER_AGENT = `Eres [AGENT_NAME], un agente comercial buscando ser contratado.
+Tu cliente se llama [USER_NAME].
 
-Si mencionan "Eduardo" o "Edu", eres Eduardo. Si mencionan "Eli", eres Eli.
+IMPORTANTE: Tu nombre es [AGENT_NAME] y DEBES mantener esta identidad durante toda la conversación, sin importar qué nombres mencione el usuario.
 
 Proceso (sé BREVE en cada paso):
 1. Saluda y pregunta qué vende
@@ -81,6 +82,8 @@ async function callGroq(
   userMessage: string, 
   userId: string = 'default',
   imageUrl?: string, 
+  agentName: string = 'Eduardo',
+  userName: string = 'Cliente',
   systemRole: string = SYSTEM_ROLE_USER_AGENT,
   temperature: number = 0.6
 ): Promise<string> {
@@ -92,10 +95,15 @@ async function callGroq(
       contextMessages = "\n\nHistorial de conversación:\n" + context.join('\n');
     }
 
+    // Reemplazar placeholders en el system role
+    const personalizedSystemRole = systemRole
+      .replace(/\[AGENT_NAME\]/g, agentName)
+      .replace(/\[USER_NAME\]/g, userName);
+
     const messages: any[] = [
       {
         role: "system",
-        content: systemRole + contextMessages
+        content: personalizedSystemRole + contextMessages
       },
       {
         role: "user",
@@ -179,11 +187,31 @@ const app = new Elysia({ serve: { idleTimeout: 30 } })
     const message = body?.message || '';
     const imageUrl = body?.imageUrl;
     const userId = body?.userId || 'default';
+    const agentName = body?.agentName || 'Eduardo';
+    const userName = body?.userName || 'Cliente';
     
-    const response = await callGroq(message, userId, imageUrl);
+    const response = await callGroq(message, userId, imageUrl, agentName, userName);
     
     return {
       text: response,
+      isUser: false,
+      timestamp: new Date()
+    };
+  })
+  .post("/api/greeting", async (context: any) => {
+    const body = context.body as any;
+    const userId = body?.userId || 'default';
+    const agentName = body?.agentName || 'Eduardo';
+    const userName = body?.userName || 'Cliente';
+    
+    // Crear un mensaje inicial que indique al modelo que debe saludar
+    const greetingPrompt = `El cliente ${userName} acaba de llegar. Preséntate brevemente y pregunta sobre su negocio.`;
+    
+    // Generar el saludo usando el modelo
+    const greeting = await callGroq(greetingPrompt, userId, undefined, agentName, userName);
+    
+    return {
+      text: greeting,
       isUser: false,
       timestamp: new Date()
     };
@@ -203,6 +231,8 @@ const app = new Elysia({ serve: { idleTimeout: 30 } })
     const message = (body as any)?.message || '';
     const imageUrl = (body as any)?.imageUrl;
     const userId = (body as any)?.userId || 'default';
+    const agentName = (body as any)?.agentName || 'Eduardo';
+    const userName = (body as any)?.userName || 'Cliente';
     
     set.headers['Content-Type'] = 'text/event-stream';
     set.headers['Cache-Control'] = 'no-cache';
@@ -217,10 +247,15 @@ const app = new Elysia({ serve: { idleTimeout: 30 } })
     
     conversationMemory.addMessage(userId, message, true);
     
+    // Reemplazar placeholders en el system role
+    const personalizedSystemRole = SYSTEM_ROLE_USER_AGENT
+      .replace(/\[AGENT_NAME\]/g, agentName)
+      .replace(/\[USER_NAME\]/g, userName);
+    
     const messages: any[] = [
       {
         role: "system",
-        content: SYSTEM_ROLE_USER_AGENT + contextMessages
+        content: personalizedSystemRole + contextMessages
       },
       {
         role: "user",

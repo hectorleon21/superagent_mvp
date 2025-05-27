@@ -167,7 +167,7 @@
 				scrollToBottom();
 			}
 		};
-		apiClient.sendChatMessageStream(userQuestion, callbacks, imageUrl, userId);
+		apiClient.sendChatMessageStream(userQuestion, callbacks, imageUrl, userId, profile?.profile?.name, profile?.name);
 	}
 	
 	// Enviar mensaje usando API REST
@@ -200,7 +200,7 @@
 		
 		try {
 			// Llamar a la API con ID de usuario
-			const response = await apiClient.sendChatMessage(userQuestion, imageUrl, userId);
+			const response = await apiClient.sendChatMessage(userQuestion, imageUrl, userId, profile?.profile?.name, profile?.name);
 			showTyping = false;
 			messages = [...messages, response];
 			scrollToBottom();
@@ -245,7 +245,7 @@
 		scrollToBottom();
 		
 		// Enviar mensaje por WebSocket con ID de usuario
-		const sent = wsClient.sendMessage(userQuestion, imageUrl, userId);
+		const sent = wsClient.sendMessage(userQuestion, imageUrl, userId, profile?.profile?.name, profile?.name);
 		
 		if (!sent) {
 			showTyping = false;
@@ -304,14 +304,27 @@
 		
 		// Mostrar efecto de escribiendo antes del saludo
 		showTyping = true;
-		setTimeout(() => {
+		
+		// Obtener el saludo inicial del backend
+		apiClient.getGreeting(
+			userId, 
+			profile?.profile?.name || 'Eduardo',
+			profile?.name || 'Cliente'
+		).then(greeting => {
 			showTyping = false;
+			messages = [...messages, greeting];
+			scrollToBottom();
+		}).catch(error => {
+			console.error('Error al obtener saludo:', error);
+			showTyping = false;
+			// Fallback en caso de error
 			messages = [...messages, {
 				text: getInitialGreeting(profile?.name || '', profile?.profile?.name || ''),
 				isUser: false,
 				timestamp: new Date()
 			}];
-		}, 2000);
+			scrollToBottom();
+		});
 		
 		// Inicializar el detector de scroll
 		if (chatContainer) {

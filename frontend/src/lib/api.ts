@@ -38,7 +38,9 @@ export const apiClient = {
   async sendChatMessage(
     message: string, 
     imageUrl?: string,
-    userId?: string
+    userId?: string,
+    agentName?: string,
+    userName?: string
   ): Promise<ChatMessage> {
     try {
       const response = await fetch(`${API_URL}/api/chat`, {
@@ -49,7 +51,9 @@ export const apiClient = {
         body: JSON.stringify({
           message,
           imageUrl,
-          userId
+          userId,
+          agentName,
+          userName
         }),
       });
 
@@ -81,7 +85,9 @@ export const apiClient = {
     message: string,
     callbacks: StreamCallbacks,
     imageUrl?: string,
-    userId?: string
+    userId?: string,
+    agentName?: string,
+    userName?: string
   ): void {
     // Método usando fetch POST con body
     fetch(`${API_URL}/api/chat/stream`, {
@@ -92,7 +98,9 @@ export const apiClient = {
       body: JSON.stringify({
         message,
         imageUrl,
-        userId
+        userId,
+        agentName,
+        userName
       }),
     }).then(response => {
       if (!response.body) {
@@ -157,6 +165,48 @@ export const apiClient = {
     }).catch(error => {
       callbacks.onError?.(error);
     });
+  },
+
+  /**
+   * Obtiene el saludo inicial del agente
+   */
+  async getGreeting(
+    userId: string,
+    agentName: string,
+    userName: string
+  ): Promise<ChatMessage> {
+    try {
+      const response = await fetch(`${API_URL}/api/greeting`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId,
+          agentName,
+          userName
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      return {
+        text: data.text,
+        isUser: false,
+        timestamp: new Date(data.timestamp)
+      };
+    } catch (error) {
+      console.error('Error al obtener saludo:', error);
+      return {
+        text: 'Hola, soy tu asistente. ¿En qué puedo ayudarte?',
+        isUser: false,
+        timestamp: new Date()
+      };
+    }
   },
 
   /**
@@ -242,12 +292,14 @@ export class WebSocketClient {
   /**
    * Envía un mensaje a través del WebSocket
    */
-  sendMessage(message: string, imageUrl?: string, userId?: string): boolean {
+  sendMessage(message: string, imageUrl?: string, userId?: string, agentName?: string, userName?: string): boolean {
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
       this.ws.send(JSON.stringify({
         message,
         imageUrl,
-        userId
+        userId,
+        agentName,
+        userName
       }));
       return true;
     }
