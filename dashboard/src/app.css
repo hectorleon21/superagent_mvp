@@ -1,0 +1,69 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+  
+  body {
+    @apply bg-gray-50 text-gray-900;
+  }
+}
+
+@layer components {
+  /* Navegación bottom */
+  .bottom-nav {
+    @apply fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-2 safe-area-bottom;
+    height: calc(4rem + env(safe-area-inset-bottom));
+  }
+  
+  .bottom-nav-item {
+    @apply flex flex-col items-center justify-center space-y-1 text-xs font-medium transition-colors;
+  }
+  
+  .bottom-nav-item.active {
+    @apply text-primary-600;
+  }
+  
+  .bottom-nav-item:not(.active) {
+    @apply text-gray-500;
+  }
+  
+  /* Chat flotante */
+  .floating-chat {
+    @apply fixed bottom-20 right-4 z-50 bg-primary-600 text-white rounded-full p-3 shadow-lg;
+  }
+  
+  /* Componentes card */
+  .dashboard-card {
+    @apply bg-white rounded-xl shadow-sm border border-gray-200 p-4;
+  }
+  
+  /* Safe area para dispositivos móviles */
+  .safe-area-top {
+    padding-top: env(safe-area-inset-top);
+  }
+  
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* Animaciones custom */
+@keyframes slideIn {
+  from {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-in {
+  animation: slideIn 0.3s ease-out;
+}
