@@ -1,0 +1,111 @@
+// This is your Prisma schema file
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Organizaciones (Multi-tenancy)
+model Organization {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  plan        Plan     @default(FREE)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relaciones
+  users       User[]
+  apiKeys     ApiKey[]
+  documents   Document[]
+  chats       Chat[]
+}
+
+// Usuarios
+model User {
+  id             String    @id @default(cuid())
+  email          String    @unique
+  passwordHash   String
+  name           String
+  role           Role      @default(USER)
+  isActive       Boolean   @default(true)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  
+  // Multi-tenancy
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  
+  // Relaciones
+  sessions       Session[]
+  chats          Chat[]
+}
+
+// Sesiones (para JWT refresh)
+model Session {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
+  refreshToken String   @unique
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+}
+
+// API Keys para integraciones
+model ApiKey {
+  id             String       @id @default(cuid())
+  key            String       @unique
+  name           String
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  permissions    String[]     // ['rag:read', 'rag:write', 'chat:write']
+  lastUsedAt     DateTime?
+  createdAt      DateTime     @default(now())
+  expiresAt      DateTime?
+  isActive       Boolean      @default(true)
+}
+
+// Documentos RAG
+model Document {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  fileName       String
+  fileType       String
+  content        String?      @db.Text
+  metadata       Json
+  vectorIds      String[]     // IDs en Qdrant
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+// Historial de chats
+model Chat {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  userId         String?
+  user           User?        @relation(fields: [userId], references: [id])
+  messages       Json         // Array de mensajes
+  metadata       Json?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+enum Role {
+  OWNER
+  ADMIN
+  USER
+  AGENT
+}
+
+enum Plan {
+  FREE
+  STARTER
+  PRO
+  ENTERPRISE
+} 
